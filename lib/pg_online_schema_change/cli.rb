@@ -29,6 +29,8 @@ module PgOnlineSchemaChange
                                      desc: "Number of rows to be replayed on each iteration after copy. This can be tuned for faster catch up and swap. Best used with delta-count."
     method_option :delta_count, aliases: "-e", type: :numeric, required: false, default: DELTA_COUNT,
                                 desc: "Indicates how many rows should be remaining before a swap should be performed. This can be tuned for faster catch up and swap, especially on highly volume tables. Best used with pull-batch-count."
+    method_option :after_rename_statements, aliases: "-r", type: :string, required: false,
+                                            desc: "Takes a .sql file location where you can provide a custom query to be played right after the tables renaming inside the swap transaction."
 
     def perform
       client_options = Struct.new(*options.keys.map(&:to_sym)).new(*options.values)

@@ -5,7 +5,8 @@ require "pg"
 module PgOnlineSchemaChange
   class Client
     attr_accessor :alter_statement, :schema, :dbname, :host, :username, :port, :password, :connection, :table, :drop,
-                  :kill_backends, :wait_time_for_lock, :copy_statement, :pull_batch_count, :delta_count
+                  :kill_backends, :wait_time_for_lock, :copy_statement, :pull_batch_count, :delta_count,
+                  :after_rename_statements
 
     def initialize(options)
       @alter_statement = options.alter_statement
@@ -22,6 +23,7 @@ module PgOnlineSchemaChange
       @delta_count = options.delta_count
 
       handle_copy_statement(options.copy_statement)
+      handle_after_rename_statements(options.after_rename_statements)
       handle_validations
 
       @connection = PG.connect(
@@ -52,6 +54,15 @@ module PgOnlineSchemaChange
       raise Error, "File not found: #{file_path}" unless File.file?(file_path)
 
       @copy_statement = File.open(file_path, "rb", &:read)
+    end
+
+    def handle_after_rename_statements(statements)
+      return if statements.nil? || statements == ""
+
+      file_path = File.expand_path(statements)
+      raise Error, "After rename statement not found: #{file_path}" unless File.file?(file_path)
+
+      @after_rename_statements = File.open(file_path, "rb", &:read)
     end
   end
 end

@@ -40,6 +40,8 @@ module PgOnlineSchemaChange
 
         Store.set(:referential_foreign_key_statements, Query.referential_foreign_keys_to_refresh(client, client.table))
         Store.set(:self_foreign_key_statements, Query.self_foreign_keys_to_refresh(client, client.table))
+
+        Store.set(:after_rename_statements, format(client.after_rename_statements, client_table: client.table, old_primary_table: old_primary_table))
       end
 
       def run!(options)
@@ -245,6 +247,7 @@ module PgOnlineSchemaChange
           #{self_foreign_key_statements}
           #{storage_params_reset}
           DROP TRIGGER IF EXISTS primary_to_audit_table_trigger ON #{client.table};
+          #{after_rename_statements}
         SQL
 
         Query.run(client.connection, sql, opened)
